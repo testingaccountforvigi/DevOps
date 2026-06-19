@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apply for Loan — LoanPro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="apply-loan">
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left" style="display:flex;align-items:center;gap:14px">
+          <button class="hamburger" id="hamburger">☰</button>
+          <div>
+            <h1>Apply for a Loan</h1>
+            <p>Fill in the details below to submit your application</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-btn">🔔</div>
+          <div style="font-size:13px;color:var(--text-muted)"><span id="tb-user-name"></span></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+
+        <div id="alert-box" style="display:none"></div>
+
+        <form id="apply-form" novalidate>
+          <div class="apply-grid">
+
+            <!-- Left: Form -->
+            <div style="display:flex;flex-direction:column;gap:22px">
+
+              <!-- Loan Type -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Select Loan Type</div>
+                    <div class="card-sub">Choose the category that best fits your need</div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="loan-type-grid">
+                    <label class="loan-type-card selected">
+                      <input type="radio" name="loan_type" value="personal" checked />
+                      <div class="loan-type-icon">👤</div>
+                      <div class="loan-type-label">Personal</div>
+                      <div class="loan-type-rate">8.9% p.a.</div>
+                    </label>
+                    <label class="loan-type-card">
+                      <input type="radio" name="loan_type" value="home" />
+                      <div class="loan-type-icon">🏠</div>
+                      <div class="loan-type-label">Home</div>
+                      <div class="loan-type-rate">6.5% p.a.</div>
+                    </label>
+                    <label class="loan-type-card">
+                      <input type="radio" name="loan_type" value="auto" />
+                      <div class="loan-type-icon">🚗</div>
+                      <div class="loan-type-label">Auto</div>
+                      <div class="loan-type-rate">7.2% p.a.</div>
+                    </label>
+                    <label class="loan-type-card">
+                      <input type="radio" name="loan_type" value="business" />
+                      <div class="loan-type-icon">💼</div>
+                      <div class="loan-type-label">Business</div>
+                      <div class="loan-type-rate">9.5% p.a.</div>
+                    </label>
+                    <label class="loan-type-card">
+                      <input type="radio" name="loan_type" value="education" />
+                      <div class="loan-type-icon">🎓</div>
+                      <div class="loan-type-label">Education</div>
+                      <div class="loan-type-rate">5.5% p.a.</div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Amount & Term -->
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">Loan Details</div>
+                </div>
+                <div class="card-body" style="display:flex;flex-direction:column;gap:22px">
+
+                  <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label">Loan Amount <span style="color:var(--danger)">*</span></label>
+                    <div style="text-align:center;margin-bottom:10px">
+                      <span class="amount-display">
+                        <sup>$</sup><span id="amount-display">25,000</span>
+                      </span>
+                    </div>
+                    <input type="range" id="loan-amount" class="form-range"
+                      min="1000" max="500000" step="1000" value="25000" />
+                    <div class="range-labels"><span>$1,000</span><span>$500,000</span></div>
+                  </div>
+
+                  <div class="grid-2">
+                    <div class="form-group" style="margin-bottom:0">
+                      <label class="form-label" for="loan-term">Repayment Term</label>
+                      <div class="input-wrap">
+                        <span class="input-icon">📅</span>
+                        <select id="loan-term" class="form-select">
+                          <option value="6">6 months</option>
+                          <option value="12" selected>12 months</option>
+                          <option value="24">24 months</option>
+                          <option value="36">36 months</option>
+                          <option value="48">48 months</option>
+                          <option value="60">60 months</option>
+                          <option value="84">84 months</option>
+                          <option value="120">120 months</option>
+                          <option value="180">180 months (15 yr)</option>
+                          <option value="240">240 months (20 yr)</option>
+                          <option value="360">360 months (30 yr)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                      <label class="form-label" for="credit-score">
+                        Credit Score <span style="color:var(--danger)">*</span>
+                      </label>
+                      <div class="input-wrap">
+                        <span class="input-icon">📈</span>
+                        <input type="number" id="credit-score" class="form-input"
+                          placeholder="300 – 850" min="300" max="850" value="720" />
+                      </div>
+                      <div class="form-hint">FICO score between 300 and 850</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Purpose -->
+              <div class="card">
+                <div class="card-header"><div class="card-title">Loan Purpose</div></div>
+                <div class="card-body">
+                  <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label" for="loan-purpose">Describe your loan purpose</label>
+                    <textarea id="loan-purpose" class="form-input" rows="3"
+                      placeholder="e.g. Home renovation, debt consolidation, business expansion…"
+                      style="resize:vertical;min-height:80px"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit -->
+              <button type="submit" id="submit-btn" class="btn btn-primary btn-lg btn-full">
+                🚀 Submit Application
+              </button>
+
+            </div>
+
+            <!-- Right: Summary sidebar -->
+            <div>
+              <div class="card loan-summary-card">
+                <div class="card-header">
+                  <div class="card-title">📊 Loan Summary</div>
+                </div>
+                <div class="card-body">
+                  <div class="summary-row"><span class="s-label">Loan Amount</span><span class="s-value" id="s-amount">—</span></div>
+                  <div class="summary-row"><span class="s-label">Interest Rate</span><span class="s-value" id="s-rate">—</span></div>
+                  <div class="summary-row"><span class="s-label">Loan Term</span><span class="s-value" id="s-term">—</span></div>
+                  <div class="summary-row"><span class="s-label">Total Interest</span><span class="s-value" id="s-interest">—</span></div>
+                  <div class="summary-row summary-total" style="margin-top:8px;padding-top:14px;border-top:2px solid var(--border)">
+                    <span class="s-label" style="font-weight:600;color:var(--text-primary)">Monthly EMI</span>
+                    <span class="s-value" id="s-monthly" style="font-size:20px;color:var(--accent-300)">—</span>
+                  </div>
+                  <div class="summary-row summary-total">
+                    <span class="s-label" style="font-weight:600;color:var(--text-primary)">Total Repayable</span>
+                    <span class="s-value" id="s-total">—</span>
+                  </div>
+                </div>
+
+                <!-- Eligibility hint -->
+                <div class="card-footer">
+                  <div style="font-size:12px;color:var(--text-faint);line-height:1.6">
+                    💡 <strong style="color:var(--text-muted)">Tip:</strong>
+                    A credit score above 700 significantly improves your approval chances.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Requirements -->
+              <div class="card" style="margin-top:16px">
+                <div class="card-header"><div class="card-title">📋 Requirements</div></div>
+                <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;gap:10px;font-size:13px;color:var(--text-muted)">
+                    <span style="color:var(--success)">✓</span> Valid government-issued ID
+                  </div>
+                  <div style="display:flex;gap:10px;font-size:13px;color:var(--text-muted)">
+                    <span style="color:var(--success)">✓</span> Proof of income (last 3 months)
+                  </div>
+                  <div style="display:flex;gap:10px;font-size:13px;color:var(--text-muted)">
+                    <span style="color:var(--success)">✓</span> Bank statements (last 6 months)
+                  </div>
+                  <div style="display:flex;gap:10px;font-size:13px;color:var(--text-muted)">
+                    <span style="color:var(--success)">✓</span> Credit score of 580 or above
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </form>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/loans.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register — LoanPro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-animated" data-page="register">
+
+  <div class="auth-wrapper">
+    <div class="auth-card" style="max-width:500px">
+
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="logo-icon">💰</div>
+        <div>
+          <div class="logo-text">LoanPro</div>
+          <div class="logo-sub">Origination System</div>
+        </div>
+      </div>
+
+      <h1 class="auth-title">Create your account</h1>
+      <p class="auth-sub">Start your loan journey in minutes</p>
+
+      <!-- Alert -->
+      <div id="alert-box" style="display:none"></div>
+
+      <!-- Form -->
+      <form id="register-form" novalidate>
+
+        <div class="form-group">
+          <label class="form-label" for="full-name">Full Name <span>*</span></label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="full-name" class="form-input"
+              placeholder="John Doe" autocomplete="name" />
+          </div>
+          <div class="form-error" id="name-error"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email address <span>*</span></label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" id="email" class="form-input"
+              placeholder="you@example.com" autocomplete="email" />
+          </div>
+          <div class="form-error" id="email-error"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="password">Password <span>*</span></label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="password" class="form-input"
+                placeholder="Min. 8 characters" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="toggle-pw">👁️</button>
+            </div>
+            <div class="form-error" id="pass-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirm-password">Confirm Password <span>*</span></label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="confirm-password" class="form-input"
+                placeholder="Repeat password" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="toggle-confirm">👁️</button>
+            </div>
+            <div class="form-error" id="confirm-error"></div>
+          </div>
+        </div>
+
+        <!-- Password strength -->
+        <div style="margin-bottom:18px;margin-top:-8px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:12px;color:var(--text-faint)">Password strength</span>
+            <span id="strength-text" style="font-size:12px;font-weight:600"></span>
+          </div>
+          <div style="height:4px;background:var(--border);border-radius:99px;overflow:hidden">
+            <div id="strength-bar" style="height:100%;width:0%;border-radius:99px;transition:all 0.3s ease"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="role">Account Type</label>
+          <div class="input-wrap">
+            <span class="input-icon">🏷️</span>
+            <select id="role" class="form-select">
+              <option value="user">Regular User — Apply for loans</option>
+              <option value="admin">Administrator — Manage the system</option>
+            </select>
+          </div>
+          <div class="form-hint">Choose Admin only if you are a system administrator.</div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-primary btn-full btn-lg">
+          Create Account
+        </button>
+      </form>
+
+      <!-- Terms note -->
+      <p style="font-size:12px;color:var(--text-faint);text-align:center;margin-top:14px;line-height:1.5">
+        By creating an account you agree to our
+        <a href="#" style="color:var(--accent-400)">Terms of Service</a> and
+        <a href="#" style="color:var(--accent-400)">Privacy Policy</a>
+      </p>
+
+      <p class="auth-footer">
+        Already have an account?
+        <a href="login.html">Sign in</a>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- Decorative orbs -->
+  <div style="position:fixed;top:-100px;right:-100px;width:380px;height:380px;
+    background:radial-gradient(circle,rgba(37,99,235,0.10),transparent 70%);
+    border-radius:50%;pointer-events:none;z-index:0"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

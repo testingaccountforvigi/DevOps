@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Loans — LoanPro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="my-loans">
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left" style="display:flex;align-items:center;gap:14px">
+          <button class="hamburger" id="hamburger">☰</button>
+          <div>
+            <h1>My Loans</h1>
+            <p>Track and manage your loan applications</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <a href="apply-loan.html" class="btn btn-primary btn-sm">+ New Application</a>
+          <div class="notif-btn">🔔</div>
+          <div style="font-size:13px;color:var(--text-muted)"><span id="tb-user-name"></span></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+
+        <!-- Filter tabs + counts -->
+        <div class="card" style="margin-bottom:22px">
+          <div class="card-body" style="padding:14px 20px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-primary btn-sm" data-filter="all">
+                  All <span id="count-all" style="background:rgba(255,255,255,0.2);padding:1px 7px;border-radius:99px;margin-left:4px">0</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" data-filter="pending">
+                  Pending <span id="count-pending" style="background:rgba(245,158,11,0.2);color:var(--warning);padding:1px 7px;border-radius:99px;margin-left:4px">0</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" data-filter="approved">
+                  Approved <span id="count-approved" style="background:rgba(16,185,129,0.2);color:var(--success);padding:1px 7px;border-radius:99px;margin-left:4px">0</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" data-filter="rejected">
+                  Rejected <span id="count-rejected" style="background:rgba(239,68,68,0.2);color:var(--danger);padding:1px 7px;border-radius:99px;margin-left:4px">0</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" data-filter="disbursed">
+                  Disbursed <span id="count-disbursed" style="background:rgba(6,182,212,0.2);color:var(--info);padding:1px 7px;border-radius:99px;margin-left:4px">0</span>
+                </button>
+              </div>
+
+              <div class="search-box">
+                <span class="icon">🔍</span>
+                <input type="text" id="loan-search" placeholder="Search loans…" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loans Table -->
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Loan Type</th>
+                  <th>Amount</th>
+                  <th>Credit Score</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="loans-tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="loans-empty" style="display:none">
+            <div class="empty-state">
+              <div class="empty-icon">📄</div>
+              <h3>No loan applications found</h3>
+              <p>Apply for your first loan or try adjusting the filter</p>
+              <a href="apply-loan.html" class="btn btn-primary" style="margin-top:16px">Apply for a Loan</a>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Loan Detail Modal -->
+  <div class="modal-backdrop" id="loan-detail-modal">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Loan Application <span id="modal-loan-id" style="color:var(--text-faint)"></span></div>
+          <div id="modal-loan-type" style="font-size:13px;color:var(--text-muted);margin-top:3px"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Detail grid -->
+        <div class="grid-2" style="margin-bottom:20px">
+          <div style="background:var(--surface-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--text-faint);margin-bottom:4px;text-transform:uppercase">Loan Amount</div>
+            <div id="modal-amount" style="font-size:22px;font-weight:800;color:var(--white)">—</div>
+          </div>
+          <div style="background:var(--surface-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--text-faint);margin-bottom:4px;text-transform:uppercase">Credit Score</div>
+            <div id="modal-credit" style="font-size:22px;font-weight:800">—</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:12px 16px;background:var(--surface-glass);border-radius:var(--radius-sm);border:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-faint)">Current Status</span>
+          <span id="modal-status">—</span>
+        </div>
+
+        <!-- Progress tracker -->
+        <div id="modal-steps"></div>
+
+        <div style="margin-top:16px;font-size:12px;color:var(--text-faint)">
+          Applied on: <span id="modal-date" style="color:var(--text-muted)"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+        <a href="apply-loan.html" class="btn btn-primary">Apply Again</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/loans.js"></script>
+</body>
+</html>

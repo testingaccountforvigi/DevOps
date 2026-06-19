@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — LoanPro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="admin-dashboard">
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left" style="display:flex;align-items:center;gap:14px">
+          <button class="hamburger" id="hamburger">☰</button>
+          <div>
+            <h1>Admin Dashboard</h1>
+            <p>System-wide overview and analytics</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <a href="loan-management.html" class="btn btn-primary btn-sm">⚙️ Manage Loans</a>
+          <div class="notif-btn">🔔</div>
+          <div style="font-size:13px;color:var(--text-muted)"><span id="tb-user-name"></span></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+
+        <!-- Admin banner -->
+        <div class="welcome-banner" style="background:linear-gradient(135deg,#1a3a6b 0%,#0f2044 100%);margin-bottom:24px">
+          <div>
+            <div class="wb-title">Admin Control Center</div>
+            <div class="wb-sub">Monitor, approve, and manage all loan applications</div>
+            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+              <a href="loan-management.html" class="btn btn-primary btn-sm">Loan Management</a>
+              <a href="loan-management.html?filter=pending" class="btn btn-ghost btn-sm">⚠️ Pending Queue</a>
+            </div>
+          </div>
+          <div class="wb-icon">⚙️</div>
+        </div>
+
+        <!-- Stats row 1 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-blue">📋</div>
+            <div>
+              <div class="stat-label">Total Applications</div>
+              <div class="stat-value" id="as-total">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-yellow">⏳</div>
+            <div>
+              <div class="stat-label">Pending</div>
+              <div class="stat-value" id="as-pending">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-green">✅</div>
+            <div>
+              <div class="stat-label">Approved</div>
+              <div class="stat-value" id="as-approved">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-red">❌</div>
+            <div>
+              <div class="stat-label">Rejected</div>
+              <div class="stat-value" id="as-rejected">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats row 2 -->
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:0">
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-cyan">💸</div>
+            <div>
+              <div class="stat-label">Disbursed</div>
+              <div class="stat-value" id="as-disbursed">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-blue">👥</div>
+            <div>
+              <div class="stat-label">Registered Users</div>
+              <div class="stat-value" id="as-users">—</div>
+            </div>
+          </div>
+          <div class="stat-card" style="grid-column:span 2">
+            <div class="stat-icon-wrap stat-icon-green">💰</div>
+            <div>
+              <div class="stat-label">Total Approved Portfolio</div>
+              <div class="stat-value" style="font-size:22px" id="as-amount">—</div>
+              <div class="stat-delta up">Approved + Disbursed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main content grid -->
+        <div class="dashboard-grid" style="margin-top:22px">
+
+          <!-- Recent Applications -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent Applications</div>
+                <div class="card-sub">Latest 8 submissions across all users</div>
+              </div>
+              <a href="loan-management.html" class="btn btn-ghost btn-sm">View All</a>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Applicant</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-recent-tbody">
+                  <tr><td colspan="6" style="text-align:center;padding:20px">
+                    <div class="skeleton" style="height:12px;width:60%;margin:auto;border-radius:4px"></div>
+                  </td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div style="display:flex;flex-direction:column;gap:20px">
+
+            <!-- Bar chart -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Status Breakdown</div>
+              </div>
+              <div class="card-body" id="admin-bar-chart">
+                <div class="skeleton" style="height:12px;width:100%;border-radius:4px;margin-bottom:12px"></div>
+                <div class="skeleton" style="height:12px;width:80%;border-radius:4px;margin-bottom:12px"></div>
+                <div class="skeleton" style="height:12px;width:60%;border-radius:4px;margin-bottom:12px"></div>
+                <div class="skeleton" style="height:12px;width:40%;border-radius:4px"></div>
+              </div>
+            </div>
+
+            <!-- Recent Users -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Recent Users</div>
+              </div>
+              <div class="card-body" style="padding:12px 16px">
+                <div id="admin-user-list" class="activity-list"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

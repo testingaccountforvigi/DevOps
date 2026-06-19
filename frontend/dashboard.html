@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — LoanPro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="dashboard">
+
+  <div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Main -->
+    <div class="main-content">
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left" style="display:flex;align-items:center;gap:14px">
+          <button class="hamburger" id="hamburger">☰</button>
+          <div>
+            <h1>Dashboard</h1>
+            <p id="today-date"></p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-btn" title="Notifications">🔔</div>
+          <div style="font-size:13px;color:var(--text-muted)">
+            <span id="tb-user-name"></span>
+          </div>
+        </div>
+      </header>
+
+      <main class="page-content">
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+          <div>
+            <div class="wb-title">Good day, <span id="welcome-name">there</span> 👋</div>
+            <div class="wb-sub">Here's a summary of your loan portfolio</div>
+            <a href="apply-loan.html" class="btn btn-primary" style="margin-top:16px;display:inline-flex">
+              + Apply for a Loan
+            </a>
+          </div>
+          <div class="wb-icon">🏦</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-blue">📋</div>
+            <div>
+              <div class="stat-label">Total Applications</div>
+              <div class="stat-value" id="stat-total">—</div>
+              <div class="stat-delta">All time</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-yellow">⏳</div>
+            <div>
+              <div class="stat-label">Pending Review</div>
+              <div class="stat-value" id="stat-pending">—</div>
+              <div class="stat-delta">Awaiting decision</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-green">✅</div>
+            <div>
+              <div class="stat-label">Approved / Disbursed</div>
+              <div class="stat-value" id="stat-approved">—</div>
+              <div class="stat-delta up">Active loans</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-cyan">💵</div>
+            <div>
+              <div class="stat-label">Total Approved Amount</div>
+              <div class="stat-value" style="font-size:20px" id="stat-amount">—</div>
+              <div class="stat-delta">Approved &amp; disbursed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard grid -->
+        <div class="dashboard-grid">
+
+          <!-- Recent Loans -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent Applications</div>
+                <div class="card-sub">Your latest loan requests</div>
+              </div>
+              <a href="loans.html" class="btn btn-ghost btn-sm">View All</a>
+            </div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Credit Score</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-loans-body">
+                  <!-- Skeleton rows -->
+                  <tr><td colspan="5">
+                    <div style="display:flex;flex-direction:column;gap:10px;padding:10px 0">
+                      <div class="skeleton" style="height:14px;width:90%;border-radius:4px"></div>
+                      <div class="skeleton" style="height:14px;width:75%;border-radius:4px"></div>
+                      <div class="skeleton" style="height:14px;width:80%;border-radius:4px"></div>
+                    </div>
+                  </td></tr>
+                </tbody>
+              </table>
+              <div id="recent-empty" style="display:none">
+                <div class="empty-state">
+                  <div class="empty-icon">📄</div>
+                  <h3>No loan applications yet</h3>
+                  <p>Apply for your first loan to get started</p>
+                  <a href="apply-loan.html" class="btn btn-primary" style="margin-top:14px">Apply Now</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart + Quick Actions -->
+          <div style="display:flex;flex-direction:column;gap:22px">
+
+            <!-- Donut chart -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Loan Overview</div>
+              </div>
+              <div class="card-body" style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+                <div id="loan-donut" style="flex-shrink:0"></div>
+                <div id="chart-legend" style="flex:1;min-width:120px"></div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Quick Actions</div>
+              </div>
+              <div class="card-body">
+                <div class="quick-actions">
+                  <a href="apply-loan.html" class="quick-action-card">
+                    <div class="qa-icon">📝</div>
+                    <div class="qa-label">Apply Loan</div>
+                  </a>
+                  <a href="loans.html" class="quick-action-card">
+                    <div class="qa-icon">📋</div>
+                    <div class="qa-label">My Loans</div>
+                  </a>
+                  <a href="loans.html?filter=approved" class="quick-action-card">
+                    <div class="qa-icon">✅</div>
+                    <div class="qa-label">Approved</div>
+                  </a>
+                  <a href="loans.html?filter=pending" class="quick-action-card">
+                    <div class="qa-icon">⏳</div>
+                    <div class="qa-label">Pending</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
