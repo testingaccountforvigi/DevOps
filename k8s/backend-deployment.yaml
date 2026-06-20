@@ -22,6 +22,11 @@ spec:
       labels:
         app: loanpro
         component: backend
+      # Opt into Prometheus pod auto-discovery (job: kubernetes-pods)
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "3000"
+        prometheus.io/path:   "/metrics"
     spec:
       containers:
         - name: backend

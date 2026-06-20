@@ -12,7 +12,7 @@
 //
 //  DockerHub username : mahesh3003
 //  GitHub repo        : https://github.com/testingaccountforvigi/DevOps
-//  Kubeconfig         : k8s/kubeconfig-jenkins.yaml (embedded certs)
+//  Kubeconfig         : kubeconfig-jenkins.yaml (project root, embedded certs)
 //  Minikube API       : https://192.168.49.2:8443  (stable internal IP)
 // =============================================================
 
@@ -24,7 +24,7 @@ pipeline {
         BACKEND_IMAGE  = 'loan-backend:latest'
         FRONTEND_IMAGE = 'loan-frontend:latest'
         K8S_NAMESPACE  = 'loan-system'
-        KUBECONFIG     = "${WORKSPACE}/k8s/kubeconfig-jenkins.yaml"
+        KUBECONFIG     = "${WORKSPACE}/kubeconfig-jenkins.yaml"
         KUBECTL        = "${WORKSPACE}/.bin/kubectl"
     }
 
@@ -163,7 +163,7 @@ pipeline {
                     ${KUBECTL} cluster-info --request-timeout=10s
 
                     echo "--- Applying all manifests ---"
-                    ${KUBECTL} apply -f k8s/ --ignore-not-found=true
+                    ${KUBECTL} apply -f k8s/
 
                     echo "--- Waiting for MySQL ---"
                     ${KUBECTL} rollout status deployment/mysql \\

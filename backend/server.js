@@ -2,14 +2,65 @@
 
 require('dotenv').config();
 
-const express    = require('express');
-const cors       = require('cors');
-const path       = require('path');
-const authRoutes = require('./routes/authRoutes');
-const loanRoutes = require('./routes/loanRoutes');
+const express      = require('express');
+const cors         = require('cors');
+const path         = require('path');
+const authRoutes   = require('./routes/authRoutes');
+const loanRoutes   = require('./routes/loanRoutes');
+
+/* ── Prometheus metrics (prom-client) ── */
+const promClient = require('prom-client');
+
+// Collect default Node.js metrics: memory, CPU, event loop lag, etc.
+// These appear in Grafana automatically once Prometheus scrapes /metrics.
+const collectDefaultMetrics = promClient.collectDefaultMetrics;
+collectDefaultMetrics({
+  prefix: 'loanpro_',        // All default metrics are prefixed with loanpro_
+  gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5],
+});
+
+// ── Custom counter: total HTTP requests ────────────────────────
+const httpRequestsTotal = new promClient.Counter({
+  name: 'loanpro_http_requests_total',
+  help: 'Total number of HTTP requests received',
+  labelNames: ['method', 'route', 'status_code'],
+});
+
+// ── Custom histogram: request duration in seconds ─────────────
+const httpRequestDuration = new promClient.Histogram({
+  name: 'loanpro_http_request_duration_seconds',
+  help: 'HTTP request duration in seconds',
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5],
+});
+
+// ── Custom gauge: currently active HTTP requests ───────────────
+const httpRequestsActive = new promClient.Gauge({
+  name: 'loanpro_http_requests_active',
+  help: 'Number of HTTP requests currently being processed',
+});
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
+
+/* ── Middleware: track request metrics ── */
+app.use((req, res, next) => {
+  // Skip tracking for the /metrics endpoint itself to avoid recursion
+  if (req.path === '/metrics') return next();
+
+  const end = httpRequestDuration.startTimer();
+  httpRequestsActive.inc();
+
+  res.on('finish', () => {
+    const route  = req.route ? req.route.path : req.path;
+    const labels = { method: req.method, route, status_code: res.statusCode };
+    httpRequestsTotal.inc(labels);
+    end(labels);
+    httpRequestsActive.dec();
+  });
+
+  next();
+});
 
 /* ── CORS ── */
 const allowedOrigins = process.env.CORS_ORIGIN
@@ -58,6 +109,19 @@ app.get('/api/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     env:       process.env.NODE_ENV || 'development',
   });
+});
+
+/* ── Prometheus metrics endpoint ── */
+// Scraped by Prometheus every 15 seconds.
+// Returns all registered metrics in the Prometheus text format.
+// URL: GET http://backend:3000/metrics
+app.get('/metrics', async (_req, res) => {
+  try {
+    res.set('Content-Type', promClient.register.contentType);
+    res.end(await promClient.register.metrics());
+  } catch (err) {
+    res.status(500).end(err.message);
+  }
 });
 
 /* ── 404 handler for unmatched API routes ── */
