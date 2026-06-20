@@ -1,0 +1,16 @@
+# =============================================================
+# monitoring/namespace.yaml
+#
+# Creates a dedicated "monitoring" namespace to isolate all
+# Prometheus and Grafana resources from the application
+# namespace (loan-system).  Keeping them separate means
+# monitoring survives an application namespace wipe and
+# makes RBAC easier to reason about.
+# =============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    app: monitoring
+    managed-by: kubectl

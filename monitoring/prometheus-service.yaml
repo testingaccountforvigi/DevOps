@@ -1,0 +1,36 @@
+# =============================================================
+# monitoring/prometheus-service.yaml
+#
+# Exposes the Prometheus web UI and API on NodePort 30090.
+# Access it at:  http://<minikube-ip>:30090
+# Minikube IP  : run `minikube ip`  (typically 192.168.49.2)
+#
+# The ClusterIP is also used by Grafana to reach Prometheus
+# internally:  http://prometheus.monitoring.svc.cluster.local:9090
+# =============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+    component: server
+  annotations:
+    # Description visible in kubectl describe
+    description: "Prometheus metrics server — UI on NodePort 30090"
+spec:
+  # NodePort makes the UI reachable from outside the cluster
+  # without an ingress controller.
+  type: NodePort
+
+  selector:
+    app: prometheus
+    component: server
+
+  ports:
+    - name: web
+      port: 9090        # ClusterIP port (used by Grafana internally)
+      targetPort: 9090  # Container port
+      nodePort: 30090   # Host port reachable via minikube IP
+      protocol: TCP

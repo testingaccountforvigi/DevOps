@@ -1,0 +1,130 @@
+# =============================================================
+# monitoring/prometheus-configmap.yaml
+#
+# Contains the entire Prometheus configuration file
+# (prometheus.yml) as a Kubernetes ConfigMap.  The Deployment
+# mounts this at /etc/prometheus/prometheus.yml inside the pod.
+#
+# Scrape jobs configured here:
+#
+#   1. prometheus        – self-monitoring (Prometheus itself)
+#   2. loanpro-backend   – direct scrape of the Node.js /metrics
+#                          endpoint in the loan-system namespace
+#   3. kubernetes-pods   – auto-discovery of ALL pods in the
+#                          loan-system namespace that carry the
+#                          annotation:
+#                            prometheus.io/scrape: "true"
+#                          Optional pod annotations supported:
+#                            prometheus.io/port:  "3000"
+#                            prometheus.io/path:  "/metrics"
+# =============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+  labels:
+    app: prometheus
+data:
+  prometheus.yml: |
+    # ──────────────────────────────────────────────────────────
+    # Global settings — apply to all scrape jobs unless
+    # overridden at the job level.
+    # ──────────────────────────────────────────────────────────
+    global:
+      scrape_interval:     15s   # How often to scrape targets
+      evaluation_interval: 15s   # How often to evaluate rules
+      scrape_timeout:      10s   # Timeout per scrape request
+
+      # Labels attached to every time-series from this instance
+      external_labels:
+        cluster: 'loanpro-minikube'
+        environment: 'production'
+
+    # ──────────────────────────────────────────────────────────
+    # Alerting (placeholder – wire up Alertmanager when needed)
+    # ──────────────────────────────────────────────────────────
+    alerting:
+      alertmanagers: []
+
+    # ──────────────────────────────────────────────────────────
+    # Recording / alerting rule files (none yet)
+    # ──────────────────────────────────────────────────────────
+    rule_files: []
+
+    # ──────────────────────────────────────────────────────────
+    # Scrape configurations
+    # ──────────────────────────────────────────────────────────
+    scrape_configs:
+
+      # ── Job 1: Prometheus self-monitoring ───────────────────
+      # Scrapes Prometheus' own /metrics endpoint so you can
+      # graph its internal performance in Grafana.
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+        metrics_path: '/metrics'
+
+      # ── Job 2: LoanPro backend (Node.js / prom-client) ──────
+      # Directly scrapes the /metrics endpoint exposed by the
+      # Express backend in the loan-system namespace.
+      # DNS format inside k8s: <svc>.<namespace>.svc.cluster.local
+      - job_name: 'loanpro-backend'
+        static_configs:
+          - targets: ['backend.loan-system.svc.cluster.local:3000']
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+        # Labels added to every metric from this job
+        relabel_configs:
+          - target_label: app
+            replacement: loanpro-backend
+          - target_label: namespace
+            replacement: loan-system
+
+      # ── Job 3: Kubernetes pod auto-discovery ────────────────
+      # Uses the Kubernetes SD (service discovery) API to find
+      # all pods in the loan-system namespace.
+      # Only pods annotated with prometheus.io/scrape: "true"
+      # are actually scraped (the keep relabel action).
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - loan-system
+
+        relabel_configs:
+          # Keep only pods that opt-in to scraping
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+
+          # Use custom metrics path if the pod sets it
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+
+          # Replace the default port with the pod's annotated port
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: '([^:]+)(?::\d+)?;(\d+)'
+            replacement: '$1:$2'
+            target_label: __address__
+
+          # Copy all pod labels to the metric (app=, component=, etc.)
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+
+          # Add namespace and pod name as labels
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+          - source_labels: [__meta_kubernetes_pod_ready]
+            action: replace
+            target_label: pod_ready

@@ -3,3 +3,10 @@ node_modules
 .DS_Store
 logs
 coverage
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl

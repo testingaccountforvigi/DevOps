@@ -1,0 +1,73 @@
+# =============================================================
+# monitoring/grafana-configmap.yaml
+#
+# Two ConfigMaps that Grafana reads automatically on startup:
+#
+#   1. grafana-datasources
+#      Mounted at /etc/grafana/provisioning/datasources/
+#      Auto-registers Prometheus as the default data source.
+#      No manual UI clicks needed.
+#
+#   2. grafana-dashboards-provider
+#      Mounted at /etc/grafana/provisioning/dashboards/
+#      Tells Grafana where to find pre-built dashboard JSON files.
+#      (Dashboard JSONs can be added as a separate ConfigMap or
+#       downloaded directly inside Grafana UI.)
+# =============================================================
+
+# ── ConfigMap 1: Datasource auto-provisioning ─────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: monitoring
+  labels:
+    app: grafana
+data:
+  # This file is read by Grafana's provisioning system.
+  # Grafana docs: https://grafana.com/docs/grafana/latest/administration/provisioning/
+  prometheus.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        # The URL uses Kubernetes internal DNS so Grafana can
+        # reach Prometheus without leaving the cluster.
+        # Format: http://<service>.<namespace>.svc.cluster.local:<port>
+        url: http://prometheus.monitoring.svc.cluster.local:9090
+        access: proxy
+        isDefault: true
+        editable: true
+        # Optional: increase query timeout
+        jsonData:
+          timeInterval: "15s"
+          queryTimeout: "60s"
+          httpMethod: "POST"
+
+---
+
+# ── ConfigMap 2: Dashboard provider ───────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-provider
+  namespace: monitoring
+  labels:
+    app: grafana
+data:
+  # Tells Grafana to look for .json dashboard files in /var/lib/grafana/dashboards
+  # You can mount dashboard JSONs via another ConfigMap and
+  # place them in that directory.
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'LoanPro Dashboards'
+        orgId: 1
+        folder: 'LoanPro'
+        folderUid: 'loanpro'
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards

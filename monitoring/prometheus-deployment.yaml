@@ -1,0 +1,132 @@
+# =============================================================
+# monitoring/prometheus-deployment.yaml
+#
+# Runs a single Prometheus replica in the monitoring namespace.
+#
+# Key design choices:
+#   - Uses the ServiceAccount with RBAC we created earlier
+#   - Mounts the ConfigMap as prometheus.yml
+#   - Uses an emptyDir volume for TSDB storage (data is lost on
+#     pod restart — add a PersistentVolumeClaim for production)
+#   - Resource limits prevent Prometheus from starving other pods
+# =============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+    component: server
+spec:
+  # Single replica is fine for local / exam setups.
+  # HA Prometheus requires Thanos or Cortex (out of scope here).
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: prometheus
+      component: server
+
+  # Recreate strategy prevents two Prometheus instances writing
+  # to the same TSDB directory at the same time.
+  strategy:
+    type: Recreate
+
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        component: server
+      # Opt this pod into its own scraping (job: kubernetes-pods)
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "9090"
+        prometheus.io/path:   "/metrics"
+
+    spec:
+      # Use the ServiceAccount that has k8s API read access
+      serviceAccountName: prometheus
+
+      # Security context — run as non-root user
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534   # "nobody" user in the Prometheus image
+        fsGroup: 65534
+
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.51.0
+          imagePullPolicy: IfNotPresent
+
+          args:
+            # Location of the config file we mounted below
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            # Where to store the TSDB data
+            - "--storage.tsdb.path=/prometheus/data"
+            # Retain 15 days of metrics data
+            - "--storage.tsdb.retention.time=15d"
+            # Enable the built-in web UI and API
+            - "--web.enable-lifecycle"
+            # Allow cross-origin requests (Grafana needs this)
+            - "--web.cors.origin=.*"
+
+          ports:
+            - name: web
+              containerPort: 9090
+              protocol: TCP
+
+          # ── Volume mounts ──────────────────────────────────
+          volumeMounts:
+            # The config file from our ConfigMap
+            - name: prometheus-config
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yml
+              readOnly: true
+
+            # TSDB storage — emptyDir resets on pod restart.
+            # Replace with a PVC for persistent metrics.
+            - name: prometheus-storage
+              mountPath: /prometheus/data
+
+          # ── Liveness & readiness probes ────────────────────
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # ── Resource limits ────────────────────────────────
+          resources:
+            requests:
+              cpu:    "100m"
+              memory: "256Mi"
+            limits:
+              cpu:    "500m"
+              memory: "512Mi"
+
+      # ── Volumes ─────────────────────────────────────────────
+      volumes:
+        # ConfigMap volume — injects prometheus.yml into the pod
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+
+        # Ephemeral storage for time-series data
+        # Swap for a PersistentVolumeClaim in real deployments
+        - name: prometheus-storage
+          emptyDir: {}
+
+      restartPolicy: Always

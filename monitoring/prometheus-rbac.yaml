@@ -1,0 +1,80 @@
+# =============================================================
+# monitoring/prometheus-rbac.yaml
+#
+# Prometheus needs READ access to the Kubernetes API so it can
+# discover scrape targets automatically (pods, endpoints,
+# services, nodes).  This file creates:
+#
+#   ServiceAccount   – identity Prometheus runs as
+#   ClusterRole      – what it is allowed to read (cluster-wide)
+#   ClusterRoleBinding – binds the role to the service account
+#
+# "cluster-wide" is required because the app lives in the
+# "loan-system" namespace but Prometheus sits in "monitoring".
+# =============================================================
+
+# ── ServiceAccount ────────────────────────────────────────────
+# The Pod will use this identity instead of the default account.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+
+---
+
+# ── ClusterRole ───────────────────────────────────────────────
+# Read-only access to the k8s objects Prometheus needs for
+# service-discovery and pod scraping.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+rules:
+  # Pod discovery – needed to find scrape targets
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - nodes/metrics
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+
+  # ConfigMap access (used by some exporters)
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+
+  # Ingress discovery
+  - apiGroups: ["extensions", "networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch"]
+
+  # Metrics API (node-level metrics)
+  - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+    verbs: ["get"]
+
+---
+
+# ── ClusterRoleBinding ────────────────────────────────────────
+# Ties the ClusterRole to the ServiceAccount created above.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: monitoring
